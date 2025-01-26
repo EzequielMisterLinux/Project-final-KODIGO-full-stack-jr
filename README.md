@@ -79,7 +79,7 @@ php artisan migrate
 - excelente ahora genere un factory de roles
 
 ```bash
-php artisan make:seeder RolesTableSeeder
+php artisan migrate:fresh --seed
 ```
 
 - este comando creará 3 tipos de roles
