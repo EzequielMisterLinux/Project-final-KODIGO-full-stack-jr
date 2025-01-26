@@ -1,4 +1,4 @@
-import React from 'react'; // Añade esta importación
+import React from 'react'; 
 
 export default function App() {
     return (
