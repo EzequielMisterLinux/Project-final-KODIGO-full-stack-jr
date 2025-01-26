@@ -1,14 +1,24 @@
 import React, { useState } from 'react'
-import { LoginApi } from '../services/api/Login.api'
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function FormLogin() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const { user, login } = useAuth();
 
-    const handleSubmit = async(e) => {
-        e.preventDefault()
-        await LoginApi({email, password})
-        console.log('Formulario enviado')
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      const result = await login({ email, password });
+      console.log(result); // Agrega esto para ver el resultado
+      if (!result.success) {
+        console.error('Login failed:', result.error);
+      }
+    };
+    
+  
+    if (user) {
+      return <Navigate to="/dashboard" replace />;
     }
 
   return (
