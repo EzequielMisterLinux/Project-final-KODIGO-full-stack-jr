@@ -15,8 +15,8 @@ class UserFactory extends Factory
         return [
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
-            'password' => Hash::make('password'), // Cambia 'password' por tu contraseña predeterminada
-            'role_id' => 3, // ID del rol 'user', o puedes generar dinámicamente si necesitas más roles
+            'password' => Hash::make('password'),
+            'role_id' => 3, 
         ];
     }
 }
