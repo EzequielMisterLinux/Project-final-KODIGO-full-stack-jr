@@ -1,7 +1,11 @@
-import ProtectedRoute from './ProtectedRoute';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useState, useEffect } from 'react';
 import { AxiosRouter } from '../services/utils/Axios.utis';
+import { Package, DollarSign, Box, Sun, Moon, Building2, Ghost, Cake } from 'lucide-react';
+import UserModal from './UserModal';
+import ProductsTable from './ProductsTable';
+import AddProductButton from './AddProductButton';
+import UserProductView from './UserProductView';
 import Loader from './Loader';
 
 export default function Dashboard() {
@@ -10,6 +14,14 @@ export default function Dashboard() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [error, setError] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+
+  const themes = [
+    { name: 'Light', icon: <Sun className="w-4 h-4" />, value: 'light' },
+    { name: 'Dark', icon: <Moon className="w-4 h-4" />, value: 'dark' },
+    { name: 'Cupcake', icon: <Cake className="w-4 h-4" />, value: 'cupcake' },
+    { name: 'Corporate', icon: <Building2 className="w-4 h-4" />, value: 'corporate' },
+    { name: 'Dracula', icon: <Ghost className="w-4 h-4" />, value: 'dracula' }
+  ];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -28,182 +40,115 @@ export default function Dashboard() {
     fetchProducts();
   }, []);
 
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-base-200">
-        {/* Navbar */}
-        <div className="navbar bg-base-100 shadow-lg fixed top-0 w-full z-50">
-          <div className="flex-1">
-            <a className="btn btn-ghost text-xl">Mi Dashboard</a>
-          </div>
-          <div className="flex-none gap-4">
-            {/* Botón para abrir el modal */}
-            <button 
-              className="btn btn-ghost btn-circle avatar"
-              onClick={() => setShowUserModal(true)}
-            >
-              <div className="w-10 rounded-full">
-                <img 
-                  alt="User avatar" 
-                  src={user?.profile_picture}
-                  onError={(e) => {
-                    e.target.src = 'https://via.placeholder.com/150';
-                  }}
-                />
-              </div>
-            </button>
-          </div>
-        </div>
+  // Role-based rendering
+  const isAdminOrEditor = user?.role_id === 1 || user?.role_id === 2;
 
-        {/* Modal de información del usuario */}
-        <div className={`modal ${showUserModal ? 'modal-open' : ''}`} onClick={() => setShowUserModal(false)}>
-          <div className="modal-box relative" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="btn btn-sm btn-circle absolute right-2 top-2"
-              onClick={() => setShowUserModal(false)}
-            >
-              ✕
-            </button>
-            
-            <div className="flex flex-col items-center gap-4 p-6">
-              <div className="avatar">
-                <div className="w-24 rounded-full">
-                  <img 
-                    src={user?.profile_picture} 
-                    alt="User avatar"
-                    onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/150';
-                    }}
+  return (
+    <div className="min-h-screen bg-base-200">
+      <div className="navbar bg-base-100 shadow-lg fixed top-0 w-full z-50">
+        <div className="flex-1">
+          <span className="text-xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
+            {isAdminOrEditor ? 'Mi Dashboard' : 'Catálogo de Productos'}
+          </span>
+        </div>
+        <div className="flex-none">
+          <button 
+            className="btn btn-ghost btn-circle avatar"
+            onClick={() => setShowUserModal(true)}
+          >
+            <div className="w-10 rounded-full ring ring-purple-200">
+              <img 
+                alt="User avatar" 
+                src={user?.profile_picture}
+                onError={(e) => {
+                  e.target.src = 'https://api.placeholder.com/150';
+                }}
+              />
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <UserModal 
+        isOpen={showUserModal}
+        onClose={() => setShowUserModal(false)}
+        user={user}
+        logout={logout}
+        themes={themes}
+      />
+
+      <div className="p-8 pt-20">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
+            Bienvenido, {user?.name}
+          </h1>
+          
+          {isAdminOrEditor ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="stats bg-base-100 shadow-lg">
+                  <div className="stat">
+                    <div className="stat-figure text-purple-400">
+                      <Package className="w-8 h-8" />
+                    </div>
+                    <div className="stat-title">Productos totales</div>
+                    <div className="stat-value text-purple-400">{products.length}</div>
+                    <div className="stat-desc">Disponibles en inventario</div>
+                  </div>
+                </div>
+                
+                <div className="stats bg-base-100 shadow-lg">
+                  <div className="stat">
+                    <div className="stat-figure text-pink-400">
+                      <DollarSign className="w-8 h-8" />
+                    </div>
+                    <div className="stat-title">Valor total</div>
+                    <div className="stat-value text-pink-400">
+                      ${products.reduce((acc, product) => acc + parseFloat(product.price*product.stock), 0).toFixed(2)}
+                    </div>
+                    <div className="stat-desc">En inventario</div>
+                  </div>
+                </div>
+                
+                <div className="stats bg-base-100 shadow-lg">
+                  <div className="stat">
+                    <div className="stat-figure text-blue-400">
+                      <Box className="w-8 h-8" />
+                    </div>
+                    <div className="stat-title">Stock total</div>
+                    <div className="stat-value text-blue-400">
+                      {products.reduce((acc, product) => acc + parseInt(product.stock), 0)}
+                    </div>
+                    <div className="stat-desc">Unidades disponibles</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="card bg-base-100 shadow-lg">
+                <div className="card-body">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="card-title text-2xl bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
+                      Inventario de Productos
+                    </h2>
+                    <AddProductButton onClick={() => console.log('Add product clicked')} />
+                  </div>
+                  <ProductsTable 
+                    products={products}
+                    isLoading={isLoadingProducts}
+                    error={error}
                   />
                 </div>
               </div>
-              
-              <div className="text-center">
-                <h3 className="text-lg font-bold">{user?.name}</h3>
-                <p className="text-sm text-gray-500">{user?.email}</p>
-              </div>
-
-              <div className="w-full flex flex-col gap-2">
-                <button className="btn btn-ghost btn-block">
-                  Configuración
-                </button>
-                <button 
-                  className="btn btn-error btn-block"
-                  onClick={() => {
-                    logout();
-                    setShowUserModal(false);
-                  }}
-                >
-                  Cerrar Sesión
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Resto del contenido del dashboard */}
-
-
-        {/* Main Content */}
-        <div className="p-8 pt-20">
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Bienvenido, {user?.name}</h1>
-            
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="stats bg-base-100 shadow">
-                <div className="stat">
-                  <div className="stat-title">Productos totales</div>
-                  <div className="stat-value">{products.length}</div>
-                  <div className="stat-desc">Disponibles en inventario</div>
-                </div>
-              </div>
-              
-              <div className="stats bg-base-100 shadow">
-                <div className="stat">
-                  <div className="stat-title">Valor total</div>
-                  <div className="stat-value">
-                    ${products.reduce((acc, product) => acc + parseFloat(product.price), 0).toFixed(2)}
-                  </div>
-                  <div className="stat-desc">En inventario</div>
-                </div>
-              </div>
-              
-              <div className="stats bg-base-100 shadow">
-                <div className="stat">
-                  <div className="stat-title">Stock total</div>
-                  <div className="stat-value">
-                    {products.reduce((acc, product) => acc + parseInt(product.stock), 0)}
-                  </div>
-                  <div className="stat-desc">Unidades disponibles</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Products Table */}
-            <div className="card bg-base-100 shadow">
-              <div className="card-body">
-                <h2 className="card-title">Inventario de Productos</h2>
-                {isLoadingProducts ? (
-                  <Loader />
-                ) : error ? (
-                  <div className="alert alert-error">{error}</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>Producto</th>
-                          <th>Precio</th>
-                          <th>Stock</th>
-                          <th>Imagen</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {products.map((product) => (
-                          <tr key={product.id}>
-                            <td>
-                              <div className="flex items-center gap-3">
-                                <div className="avatar">
-                                  <div className="mask mask-squircle w-12 h-12">
-                                    <img 
-                                      src={product.image} 
-                                      alt={product.name} 
-                                      onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/50';
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="font-bold">{product.name}</div>
-                                  <div className="text-sm opacity-50">
-                                    {product.description}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td>${parseFloat(product.price).toFixed(2)}</td>
-                            <td>{product.stock} unidades</td>
-                            <td>
-                              <button 
-                                className="btn btn-ghost btn-xs"
-                                onClick={() => window.open(product.image, '_blank')}
-                              >
-                                Ver imagen
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <UserProductView 
+              products={products}
+              isLoading={isLoadingProducts}
+              error={error}
+            />
+          )}
         </div>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }

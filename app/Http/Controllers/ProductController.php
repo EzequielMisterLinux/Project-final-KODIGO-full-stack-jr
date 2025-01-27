@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
@@ -20,25 +21,36 @@ class ProductController extends Controller
         return response()->json($product, 200);
     }
 
+
+
     function store(Request $request){
         $request->validate([
             'name' => 'required|string',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'stock' => 'required|numeric',
-            'image' => 'required|string',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $imagePictureUrl = null;
+
+        if ($request->hasFile('image')) {
+            $uploadedFileUrl = Cloudinary::upload($request->file('image')->getRealPath())->getSecurePath();
+            $imagePictureUrl = $uploadedFileUrl;
+        }
 
         $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
             'stock' => $request->stock,
-            'image' => $request->image,
+            'image' => $imagePictureUrl,
         ]);
 
         return response()->json($product, 201);
     }
+
+
 
     function update(Request $request, $id){
         $product = Product::find($id);

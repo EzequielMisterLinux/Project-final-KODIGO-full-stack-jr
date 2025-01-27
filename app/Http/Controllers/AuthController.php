@@ -12,32 +12,51 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AuthController extends Controller
 {
+
+    
     public function register(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|string|email|unique:users',
-            'password' => 'required|string|min:6',
-            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+{
+    $request->validate([
+        'name' => 'required|string',
+        'email' => 'required|string|email|unique:users',
+        'password' => 'required|string|min:6',
+        'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
     
-        $profilePictureUrl = null;
+    $profilePictureUrl = null;
     
-        if ($request->hasFile('profile_picture')) {
-            $uploadedFileUrl = Cloudinary::upload($request->file('profile_picture')->getRealPath())->getSecurePath();
-            $profilePictureUrl = $uploadedFileUrl;
-        }
-    
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role_id' => 3, // Default to 'user'
-            'profile_picture' => $profilePictureUrl,
-        ]);
-    
-        return response()->json(['user' => $user], 201);
+    // Subir la foto de perfil a Cloudinary si está presente
+    if ($request->hasFile('profile_picture')) {
+        $uploadedFileUrl = Cloudinary::upload($request->file('profile_picture')->getRealPath())->getSecurePath();
+        $profilePictureUrl = $uploadedFileUrl;
     }
+
+    // Crear al usuario en la base de datos
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'role_id' => 3, // Default to 'user'
+        'profile_picture' => $profilePictureUrl,
+    ]);
+
+    // Crear el token JWT para el nuevo usuario
+    $token = JWTAuth::fromUser($user);
+    
+    return response()->json([
+        'token' => $token,
+        'user' => $user
+    ])->cookie(
+        'token', 
+        $token, 
+        config('jwt.ttl'), 
+        '/', 
+        null, 
+        false, 
+        true // HttpOnly
+    );
+}
+
 
     
     public function login(Request $request)
@@ -74,7 +93,23 @@ class AuthController extends Controller
 
     public function logout()
     {
-        Auth::logout();
-        return response()->json(['message' => 'Logged out']);
+        try {
+            // Invalida el token JWT actual
+            JWTAuth::invalidate(JWTAuth::getToken());
+    
+            // Elimina la cookie del token
+            return response()->json(['message' => 'Logged out successfully'])->cookie(
+                'token', 
+                null, 
+                -1, // Configura la cookie para que expire inmediatamente
+                '/', 
+                null, 
+                false, 
+                true // HttpOnly
+            );
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Failed to log out'], 500);
+        }
     }
+    
 }
