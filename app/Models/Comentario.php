@@ -9,4 +9,10 @@ class Comentario extends Model
 {
     use HasFactory;
     protected $table = 'comentario';
+    protected $fillable = [
+        'contenido',
+        'fecha',
+        'usuario_id',
+        'producto_id',
+    ];
 }

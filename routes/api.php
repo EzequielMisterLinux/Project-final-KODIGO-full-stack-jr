@@ -7,12 +7,9 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 
 
-<<<<<<< HEAD
-// Rutas públicas para el registro y login
-=======
->>>>>>> main
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+
 
 Route::middleware('auth:api')->group(function () {
     Route::get('users', [UserController::class, 'index']);

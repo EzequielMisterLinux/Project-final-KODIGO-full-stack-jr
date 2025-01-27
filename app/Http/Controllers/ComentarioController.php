@@ -32,7 +32,7 @@ class ComentarioController extends Controller
         $validated = $request->validate([
             'contenido' => 'required|string|max:255', // Valida contenido como string requerido con un máximo de 255 caracteres
             'fecha' => 'required|date', // Valida que sea una fecha válida
-            'usuario_id' => 'required|exists:usuarios,id', // Valida que usuario_id exista en la tabla usuarios
+            'usuario_id' => 'required|exists:users,id', // Valida que usuario_id exista en la tabla usuarios
             'producto_id' => 'required|exists:products,id', // Valida que producto_id exista en la tabla products
         ]);
 
