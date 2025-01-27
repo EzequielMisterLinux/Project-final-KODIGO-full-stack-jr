@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
+
 
 // Rutas públicas para el registro y login
 Route::post('register', [AuthController::class, 'register']);
@@ -24,5 +26,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('products', [ProductController::class, 'store']);
     Route::put('products/{id}', [ProductController::class, 'update']);
     Route::delete('products/{id}', [ProductController::class, 'destroy']);
+
+    //rutas comentarios
+    Route::post('comentario', [ComentarioController::class, 'store']);
     
 });
