@@ -29,6 +29,8 @@ Route::middleware('auth:api')->group(function () {
 
     //rutas comentarios
     Route::post('comentario', [ComentarioController::class, 'store']);
+    Route::patch('/comentario/{id}', [ComentarioController::class, 'update']);
+
     
 });
 
