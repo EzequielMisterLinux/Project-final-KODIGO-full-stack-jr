@@ -44,7 +44,15 @@ class AuthController extends Controller
         return response()->json([
             'token' => $token,
             'user' => Auth::user()
-        ]);
+        ])->cookie(
+            'token', 
+            $token, 
+            config('jwt.ttl'), 
+            '/', 
+            null, 
+            false, 
+            true // HttpOnly
+        );
     }
 
 

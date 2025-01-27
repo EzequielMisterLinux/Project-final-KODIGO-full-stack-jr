@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import FormLogin from './components/FormLogin';
-import '../css/app.css';
+import App from './App';
 
 ReactDOM.createRoot(document.getElementById('app')).render(
   <React.StrictMode>
-    <FormLogin /> 
+    <App />
   </React.StrictMode>
 );
