@@ -9,7 +9,7 @@ export const AxiosRouter = axios.create({
   },
 });
 
-// Interceptor para agregar el token
+
 AxiosRouter.interceptors.request.use((config) => {
   const token = localStorage.getItem('authToken');
   if (token) {
@@ -18,7 +18,6 @@ AxiosRouter.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor para manejar errores
 AxiosRouter.interceptors.response.use(
   response => response,
   error => {

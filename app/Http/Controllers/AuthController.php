@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AuthController extends Controller
 {
@@ -17,18 +18,28 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|email|unique:users',
             'password' => 'required|string|min:6',
+            'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-
+    
+        $profilePictureUrl = null;
+    
+        if ($request->hasFile('profile_picture')) {
+            $uploadedFileUrl = Cloudinary::upload($request->file('profile_picture')->getRealPath())->getSecurePath();
+            $profilePictureUrl = $uploadedFileUrl;
+        }
+    
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role_id' => 3, // Default to 'user'
+            'profile_picture' => $profilePictureUrl,
         ]);
-
+    
         return response()->json(['user' => $user], 201);
     }
 
+    
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');

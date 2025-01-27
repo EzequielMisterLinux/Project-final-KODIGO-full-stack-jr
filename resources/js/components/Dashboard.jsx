@@ -9,6 +9,7 @@ export default function Dashboard() {
   const [products, setProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [error, setError] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -36,27 +37,72 @@ export default function Dashboard() {
             <a className="btn btn-ghost text-xl">Mi Dashboard</a>
           </div>
           <div className="flex-none gap-4">
-            {/* Profile Dropdown */}
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 rounded-full">
+            {/* Botón para abrir el modal */}
+            <button 
+              className="btn btn-ghost btn-circle avatar"
+              onClick={() => setShowUserModal(true)}
+            >
+              <div className="w-10 rounded-full">
+                <img 
+                  alt="User avatar" 
+                  src={user?.profile_picture}
+                  onError={(e) => {
+                    e.target.src = 'https://via.placeholder.com/150';
+                  }}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Modal de información del usuario */}
+        <div className={`modal ${showUserModal ? 'modal-open' : ''}`} onClick={() => setShowUserModal(false)}>
+          <div className="modal-box relative" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="btn btn-sm btn-circle absolute right-2 top-2"
+              onClick={() => setShowUserModal(false)}
+            >
+              ✕
+            </button>
+            
+            <div className="flex flex-col items-center gap-4 p-6">
+              <div className="avatar">
+                <div className="w-24 rounded-full">
                   <img 
-                    alt="User avatar" 
-                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" 
+                    src={user?.profile_picture} 
+                    alt="User avatar"
+                    onError={(e) => {
+                      e.target.src = 'https://via.placeholder.com/150';
+                    }}
                   />
                 </div>
               </div>
-              <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                <li className="menu-title">
-                  <span>{user?.name}</span>
-                  <span className="text-xs text-gray-500">{user?.email}</span>
-                </li>
-                <li><a>Configuración</a></li>
-                <li><button onClick={logout}>Cerrar Sesión</button></li>
-              </ul>
+              
+              <div className="text-center">
+                <h3 className="text-lg font-bold">{user?.name}</h3>
+                <p className="text-sm text-gray-500">{user?.email}</p>
+              </div>
+
+              <div className="w-full flex flex-col gap-2">
+                <button className="btn btn-ghost btn-block">
+                  Configuración
+                </button>
+                <button 
+                  className="btn btn-error btn-block"
+                  onClick={() => {
+                    logout();
+                    setShowUserModal(false);
+                  }}
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Resto del contenido del dashboard */}
+
 
         {/* Main Content */}
         <div className="p-8 pt-20">
