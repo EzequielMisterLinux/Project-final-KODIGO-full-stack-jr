@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -23,23 +25,7 @@ class UserController extends Controller
         return response()->json($user, 200);
     }
 
-    // Crear un nuevo usuario
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-        ]);
-
-        return response()->json($user, 201);
-    }
 
     // Actualizar un usuario
     public function update(Request $request, $id)
@@ -49,9 +35,51 @@ class UserController extends Controller
             return response()->json(['error' => 'User not found'], 404);
         }
 
-        $user->update($request->only(['name', 'email']));
+        $request->validate([
+            'name' => 'sometimes|required|string',
+            'email' => 'sometimes|required|email|unique:users,email,' . $user->id,
+            'password' => 'sometimes|string|min:6',
+            'profile_picture' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $data = $request->only(['name', 'email']);
+
+        // Actualizar contraseña si se proporciona
+        if ($request->has('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        // Actualizar imagen de perfil si se proporciona
+        if ($request->hasFile('profile_picture')) {
+            $uploadedFileUrl = Cloudinary::upload($request->file('profile_picture')->getRealPath())->getSecurePath();
+            $data['profile_picture'] = $uploadedFileUrl;
+        }
+
+        $user->update($data);
+
         return response()->json($user, 200);
     }
+
+    public function updateRole(Request $request, $id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $request->validate([
+            'role_id' => 'required|integer|in:1,2,3',
+        ]);
+
+        $user->update(['role_id' => $request->role_id]);
+
+        return response()->json([
+            'message' => 'Role updated successfully',
+            'user' => $user
+        ], 200);
+    }
+
+
 
     // Eliminar un usuario
     public function destroy($id)

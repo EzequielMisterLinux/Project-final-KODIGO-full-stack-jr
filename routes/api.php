@@ -15,6 +15,8 @@ Route::middleware('auth:api')->group(function () {
     Route::post('users', [UserController::class, 'store']);
     Route::put('users/{id}', [UserController::class, 'update']);
     Route::delete('users/{id}', [UserController::class, 'destroy']);
+
+    Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
     
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
