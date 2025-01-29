@@ -17,10 +17,16 @@ export default {
     },
     plugins: [require('daisyui')],
     daisyui: {
-        themes: ["light", "cupcake"],
-        darkTheme: "dark",
-        base: true,
-        styled: true,
-        utils: true,
+      themes: [
+        "light",
+        "dark",
+        "cupcake",
+        "corporate",
+        "dracula"
+      ],
+      darkTheme: "dark", // Puedes cambiar esto al tema que prefieras para dark mode
+      base: true,
+      styled: true,
+      utils: true,
     },
-};
+  };

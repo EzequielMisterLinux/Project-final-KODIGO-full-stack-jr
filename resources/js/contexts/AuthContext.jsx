@@ -30,18 +30,41 @@ export function AuthProvider({ children }) {
     login: async (credentials) => {
       try {
         const { data } = await AxiosRouter.post('/api/login', credentials);
-        localStorage.setItem('authToken', data.token);
         setUser(data.user);
         return { success: true };
       } catch (error) {
-        return { 
-          success: false, 
-          error: error.response?.data?.error || 'Login failed' 
+        return {
+          success: false,
+          error: error.response?.data?.error || 'Login failed'
         };
       }
     },
-    logout: () => {
-      localStorage.removeItem('authToken');
+    register: async (userData) => {
+      try {
+        const formData = new FormData();
+        formData.append('name', userData.name);
+        formData.append('email', userData.email);
+        formData.append('password', userData.password);
+        if (userData.profile_picture) {
+          formData.append('profile_picture', userData.profile_picture);
+        }
+
+        const { data } = await AxiosRouter.post('/api/register', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        setUser(data.user);
+        return { success: true };
+      } catch (error) {
+        return {
+          success: false,
+          error: error.response?.data?.error || 'Registration failed'
+        };
+      }
+    },
+    logout: async () => {
+      await AxiosRouter.post('/api/logout');
       setUser(null);
       navigate('/');
     }

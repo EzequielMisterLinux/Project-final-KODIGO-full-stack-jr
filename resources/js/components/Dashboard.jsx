@@ -1,14 +1,29 @@
-import ProtectedRoute from './ProtectedRoute';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useState, useEffect } from 'react';
 import { AxiosRouter } from '../services/utils/Axios.utis';
-import Loader from './Loader';
+import { Package, DollarSign, Box, Sun, Moon, Building2, Ghost, Cake } from 'lucide-react';
+import UserModal from './UserModal';
+import ProductsTable from './ProductsTable';
+import AddProductButton from './AddProductButton';
+import UserProductView from './UserProductView';
+import Sidebar from './Sidebar';
+import UsersTable from './UsersTable'; // You'll need to create this component
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
   const [products, setProducts] = useState([]);
+  const [currentView, setCurrentView] = useState('products');
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [error, setError] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+
+  const themes = [
+    { name: 'Light', icon: <Sun className="w-4 h-4" />, value: 'light' },
+    { name: 'Dark', icon: <Moon className="w-4 h-4" />, value: 'dark' },
+    { name: 'Cupcake', icon: <Cake className="w-4 h-4" />, value: 'cupcake' },
+    { name: 'Corporate', icon: <Building2 className="w-4 h-4" />, value: 'corporate' },
+    { name: 'Dracula', icon: <Ghost className="w-4 h-4" />, value: 'dracula' }
+  ];
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -27,137 +42,140 @@ export default function Dashboard() {
     fetchProducts();
   }, []);
 
-  return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-base-200">
-        {/* Navbar */}
-        <div className="navbar bg-base-100 shadow-lg fixed top-0 w-full z-50">
-          <div className="flex-1">
-            <a className="btn btn-ghost text-xl">Mi Dashboard</a>
-          </div>
-          <div className="flex-none gap-4">
-            {/* Profile Dropdown */}
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 rounded-full">
-                  <img 
-                    alt="User avatar" 
-                    src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" 
-                  />
-                </div>
+  const handleProductUpdate = (updatedProducts) => {
+    setProducts(updatedProducts);
+  };
+
+  const isAdminOrEditor = user?.role_id === 1 || user?.role_id === 2;
+
+  const renderContent = () => {
+    if (!isAdminOrEditor) {
+      return (
+        <UserProductView 
+          products={products}
+          isLoading={isLoadingProducts}
+          error={error}
+        />
+      );
+    }
+
+    if (currentView === 'users' && user?.role_id === 1) {
+      return <UsersTable />;
+    }
+
+    return (
+      <>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          {/* Stats cards */}
+          <div className="stats bg-base-100 shadow-lg">
+            <div className="stat">
+              <div className="stat-figure text-purple-400">
+                <Package className="w-8 h-8" />
               </div>
-              <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                <li className="menu-title">
-                  <span>{user?.name}</span>
-                  <span className="text-xs text-gray-500">{user?.email}</span>
-                </li>
-                <li><a>Configuración</a></li>
-                <li><button onClick={logout}>Cerrar Sesión</button></li>
-              </ul>
+              <div className="stat-title">Productos totales</div>
+              <div className="stat-value text-purple-400">{products.length}</div>
+              <div className="stat-desc">Disponibles en inventario</div>
+            </div>
+          </div>
+          
+          <div className="stats bg-base-100 shadow-lg">
+            <div className="stat">
+              <div className="stat-figure text-pink-400">
+                <DollarSign className="w-8 h-8" />
+              </div>
+              <div className="stat-title">Valor total</div>
+              <div className="stat-value text-pink-400">
+                ${products.reduce((acc, product) => acc + parseFloat(product.price*product.stock), 0).toFixed(2)}
+              </div>
+              <div className="stat-desc">En inventario</div>
+            </div>
+          </div>
+          
+          <div className="stats bg-base-100 shadow-lg">
+            <div className="stat">
+              <div className="stat-figure text-blue-400">
+                <Box className="w-8 h-8" />
+              </div>
+              <div className="stat-title">Stock total</div>
+              <div className="stat-value text-blue-400">
+                {products.reduce((acc, product) => acc + parseInt(product.stock), 0)}
+              </div>
+              <div className="stat-desc">Unidades disponibles</div>
             </div>
           </div>
         </div>
 
-        {/* Main Content */}
+        <div className="card bg-base-100 shadow-lg">
+          <div className="card-body">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="card-title text-2xl bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
+                Inventario de Productos
+              </h2>
+              <AddProductButton onProductAdded={(newProduct) => setProducts([...products, newProduct])} />
+            </div>
+            <ProductsTable 
+              products={products}
+              isLoading={isLoadingProducts}
+              error={error}
+              onProductUpdate={handleProductUpdate}
+            />
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-base-200">
+      <Sidebar 
+        onNavigate={setCurrentView}
+        currentView={currentView}
+      />
+
+      {/* Main content */}
+      <div className="lg:ml-64 min-h-screen transition-all duration-300">
+        <div className="navbar bg-base-100 shadow-lg fixed top-0 right-0 w-full lg:w-[calc(100%-16rem)] z-50">
+          <div className="flex-1">
+            <span className="text-xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
+              {isAdminOrEditor ? 'Mi Dashboard' : 'Catálogo de Productos'}
+            </span>
+          </div>
+          <div className="flex-none">
+            <button 
+              className="btn btn-ghost btn-circle avatar"
+              onClick={() => setShowUserModal(true)}
+            >
+              <div className="w-10 rounded-full ring ring-purple-200">
+                <img 
+                  alt="User avatar" 
+                  src={user?.profile_picture}
+                  onError={(e) => {
+                    e.target.src = 'https://api.placeholder.com/150';
+                  }}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <UserModal 
+          isOpen={showUserModal}
+          onClose={() => setShowUserModal(false)}
+          user={user}
+          logout={logout}
+          themes={themes}
+        />
+
         <div className="p-8 pt-20">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold mb-8">Bienvenido, {user?.name}</h1>
+            <h1 className="text-3xl font-bold mb-8 bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
+              Bienvenido, {user?.name}
+            </h1>
             
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="stats bg-base-100 shadow">
-                <div className="stat">
-                  <div className="stat-title">Productos totales</div>
-                  <div className="stat-value">{products.length}</div>
-                  <div className="stat-desc">Disponibles en inventario</div>
-                </div>
-              </div>
-              
-              <div className="stats bg-base-100 shadow">
-                <div className="stat">
-                  <div className="stat-title">Valor total</div>
-                  <div className="stat-value">
-                    ${products.reduce((acc, product) => acc + parseFloat(product.price), 0).toFixed(2)}
-                  </div>
-                  <div className="stat-desc">En inventario</div>
-                </div>
-              </div>
-              
-              <div className="stats bg-base-100 shadow">
-                <div className="stat">
-                  <div className="stat-title">Stock total</div>
-                  <div className="stat-value">
-                    {products.reduce((acc, product) => acc + parseInt(product.stock), 0)}
-                  </div>
-                  <div className="stat-desc">Unidades disponibles</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Products Table */}
-            <div className="card bg-base-100 shadow">
-              <div className="card-body">
-                <h2 className="card-title">Inventario de Productos</h2>
-                {isLoadingProducts ? (
-                  <Loader />
-                ) : error ? (
-                  <div className="alert alert-error">{error}</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="table">
-                      <thead>
-                        <tr>
-                          <th>Producto</th>
-                          <th>Precio</th>
-                          <th>Stock</th>
-                          <th>Imagen</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {products.map((product) => (
-                          <tr key={product.id}>
-                            <td>
-                              <div className="flex items-center gap-3">
-                                <div className="avatar">
-                                  <div className="mask mask-squircle w-12 h-12">
-                                    <img 
-                                      src={product.image} 
-                                      alt={product.name} 
-                                      onError={(e) => {
-                                        e.target.src = 'https://via.placeholder.com/50';
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="font-bold">{product.name}</div>
-                                  <div className="text-sm opacity-50">
-                                    {product.description}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td>${parseFloat(product.price).toFixed(2)}</td>
-                            <td>{product.stock} unidades</td>
-                            <td>
-                              <button 
-                                className="btn btn-ghost btn-xs"
-                                onClick={() => window.open(product.image, '_blank')}
-                              >
-                                Ver imagen
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </div>
+            {renderContent()}
           </div>
         </div>
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }
