@@ -14,6 +14,6 @@ class DatabaseSeeder extends Seeder
 
         // Crea usuarios de prueba
         //User::factory()->count(10)->create(); // Cambia el número según necesites
-        //Comentario::factory(20)->create(); 
+        Comentario::factory(20)->create(); 
     }
 }

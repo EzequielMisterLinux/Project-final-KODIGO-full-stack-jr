@@ -19,7 +19,7 @@ class ComentarioFactory extends Factory
     public function definition(): array
     {
         return [
-            'contenido' => $this->faker->paragraph(), // Texto ficticio para el comentario
+            'contenido' => $this->faker->text(200), // Texto ficticio para el comentario
             'fecha' => $this->faker->dateTimeBetween('-1 year', 'now'), // Fecha aleatoria entre hace un año y ahora
             'usuario_id' => User::query()->inRandomOrder()->value('id'), // Selecciona un ID de usuario existente
             'producto_id' => Product::query()->inRandomOrder()->value('id'), // Selecciona un ID de producto existente
