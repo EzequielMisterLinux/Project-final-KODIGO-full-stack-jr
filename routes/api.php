@@ -2,12 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+
 
 Route::middleware('auth:api')->group(function () {
     Route::get('users', [UserController::class, 'index']);
@@ -26,5 +28,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('products', [ProductController::class, 'store']);
     Route::put('products/{id}', [ProductController::class, 'update']);
     Route::delete('products/{id}', [ProductController::class, 'destroy']);
+
+    //rutas comentarios
+    Route::post('comentario', [ComentarioController::class, 'store']);
+    Route::patch('/comentario/{id}', [ComentarioController::class, 'update']);
+
+    
 });
 
