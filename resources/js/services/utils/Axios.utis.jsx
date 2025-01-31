@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 export const AxiosRouter = axios.create({
-  baseURL:"https://project-final-kodigo-full-stack-production.up.railway.app" ,
+  baseURL: import.meta.url.VITE_APP_URL ,
   headers: {
     "Content-Type": "application/json",
     "Accept": "application/json",
