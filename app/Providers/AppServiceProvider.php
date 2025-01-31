@@ -3,7 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +15,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        parent::boot();
+        // Force HTTPS in production
+        if(config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
 
     /**
@@ -36,8 +40,8 @@ class AppServiceProvider extends ServiceProvider
     protected function mapApiRoutes()
     {
         Route::prefix('api')
-             ->middleware('api')
-             ->group(base_path('routes/api.php'));
+            ->middleware('api')
+            ->group(base_path('routes/api.php'));
     }
 
     /**
@@ -48,6 +52,16 @@ class AppServiceProvider extends ServiceProvider
     protected function mapWebRoutes()
     {
         Route::middleware('web')
-             ->group(base_path('routes/web.php'));
+            ->group(base_path('routes/web.php'));
+    }
+
+    /**
+     * Register any application services.
+     *
+     * @return void
+     */
+    public function register()
+    {
+        //
     }
 }
