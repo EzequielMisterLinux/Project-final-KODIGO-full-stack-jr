@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
       setUser(data);
     } catch (error) {
       setUser(null);
+      navigate('/');
     } finally {
       setIsLoading(false);
     }

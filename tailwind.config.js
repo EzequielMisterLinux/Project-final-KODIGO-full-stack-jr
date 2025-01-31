@@ -22,7 +22,9 @@ export default {
         "dark",
         "cupcake",
         "corporate",
-        "dracula"
+        "dracula",
+        "synthwave",
+        "coffee",
       ],
       darkTheme: "dark", // Puedes cambiar esto al tema que prefieras para dark mode
       base: true,

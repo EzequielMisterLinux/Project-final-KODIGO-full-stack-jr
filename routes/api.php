@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ComentarioController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\UserController;
 
@@ -17,6 +18,8 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('users/{id}', [UserController::class, 'destroy']);
 
     Route::patch('/users/{id}/role', [UserController::class, 'updateRole']);
+    Route::patch('/users/{id}/info', [UserController::class, 'updateInfo']);
+    Route::patch('/users/{id}/password', [UserController::class, 'updatePassword']);
     
     Route::get('me', [AuthController::class, 'me']);
     Route::post('logout', [AuthController::class, 'logout']);
@@ -26,5 +29,11 @@ Route::middleware('auth:api')->group(function () {
     Route::post('products', [ProductController::class, 'store']);
     Route::put('products/{id}', [ProductController::class, 'update']);
     Route::delete('products/{id}', [ProductController::class, 'destroy']);
+
+
+    Route::post('comentario', [ComentarioController::class, 'store']);
+    Route::get('comentario', [ComentarioController::class, 'index']);
+    Route::patch('/comentario/{id}', [ComentarioController::class, 'update']);
 });
+
 

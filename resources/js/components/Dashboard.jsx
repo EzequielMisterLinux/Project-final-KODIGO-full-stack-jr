@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { AxiosRouter } from '../services/utils/Axios.utis';
-import { Package, DollarSign, Box, Sun, Moon, Building2, Ghost, Cake } from 'lucide-react';
+import { Package, DollarSign, Box, Sun, Moon, Building2, Ghost, Cake, Coffee, AlarmCheck, Music2 } from 'lucide-react';
 import UserModal from './UserModal';
 import ProductsTable from './ProductsTable';
 import AddProductButton from './AddProductButton';
 import UserProductView from './UserProductView';
 import Sidebar from './Sidebar';
-import UsersTable from './UsersTable'; // You'll need to create this component
+import UsersTable from './UsersTable';
 
 export default function Dashboard() {
   const { user, logout } = useAuth();
@@ -16,13 +16,16 @@ export default function Dashboard() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [error, setError] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const themes = [
     { name: 'Light', icon: <Sun className="w-4 h-4" />, value: 'light' },
     { name: 'Dark', icon: <Moon className="w-4 h-4" />, value: 'dark' },
     { name: 'Cupcake', icon: <Cake className="w-4 h-4" />, value: 'cupcake' },
     { name: 'Corporate', icon: <Building2 className="w-4 h-4" />, value: 'corporate' },
-    { name: 'Dracula', icon: <Ghost className="w-4 h-4" />, value: 'dracula' }
+    { name: 'Dracula', icon: <Ghost className="w-4 h-4" />, value: 'dracula' },
+    { name: 'Coffee', icon: <Coffee className="w-4 h-4" />, value: 'coffee' },
+    { name: 'Synthwave', icon: <Music2 className="w-4 h-4" />, value: 'synthwave' }
   ];
 
   useEffect(() => {
@@ -66,7 +69,6 @@ export default function Dashboard() {
     return (
       <>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Stats cards */}
           <div className="stats bg-base-100 shadow-lg">
             <div className="stat">
               <div className="stat-figure text-purple-400">
@@ -127,15 +129,42 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-base-200">
-      <Sidebar 
-        onNavigate={setCurrentView}
-        currentView={currentView}
-      />
+      {isAdminOrEditor && (
+        <Sidebar 
+          onNavigate={setCurrentView}
+          currentView={currentView}
+          isOpen={sidebarOpen}
+          onToggle={setSidebarOpen}
+        />
+      )}
 
-      {/* Main content */}
-      <div className="lg:ml-64 min-h-screen transition-all duration-300">
-        <div className="navbar bg-base-100 shadow-lg fixed top-0 right-0 w-full lg:w-[calc(100%-16rem)] z-50">
+      {/* Contenedor principal modificado */}
+      <div className="min-h-screen lg:ml-64">
+        <div className={`navbar bg-base-100 shadow-lg fixed top-0 w-full ${
+          isAdminOrEditor ? 'lg:w-[calc(100%-16rem)]' : ''
+        } right-0 z-50`}>
           <div className="flex-1">
+            {isAdminOrEditor && (
+              <button 
+                className="lg:hidden btn btn-ghost btn-circle"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+              >
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg" 
+                  className="h-6 w-6" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M4 6h16M4 12h16M4 18h16" 
+                  />
+                </svg>
+              </button>
+            )}
             <span className="text-xl font-bold bg-gradient-to-r from-pink-400 to-purple-400 text-transparent bg-clip-text">
               {isAdminOrEditor ? 'Mi Dashboard' : 'Catálogo de Productos'}
             </span>

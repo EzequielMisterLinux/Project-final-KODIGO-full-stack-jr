@@ -9,19 +9,42 @@ use Illuminate\Support\Facades\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use OpenApi\Annotations as OA;
 
 class AuthController extends Controller
 {
 
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="User Registration",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"name", "email", "password"},
+     *                 @OA\Property(property="name", type="string"),
+     *                 @OA\Property(property="email", type="string", format="email"),
+     *                 @OA\Property(property="password", type="string", format="password"),
+     *                 @OA\Property(property="profile_picture", type="string", format="binary")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response="201", description="User created successfully")
+     * )
+     */
     
     public function register(Request $request)
 {
+
     $request->validate([
         'name' => 'required|string',
         'email' => 'required|string|email|unique:users',
         'password' => 'required|string|min:6',
         'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
     ]);
+    
     
     $profilePictureUrl = null;
     
@@ -58,9 +81,26 @@ class AuthController extends Controller
 }
 
 
+/**
+ * @OA\Post(
+ *     path="/api/login",
+ *     summary="User Login",
+ *     tags={"Authentication"},
+ *     @OA\RequestBody(
+ *         @OA\JsonContent(
+ *             @OA\Property(property="email", type="string", format="email"),
+ *             @OA\Property(property="password", type="string")
+ *         )
+ *     ),
+ *     @OA\Response(response="200", description="Login successful")
+ * )
+ */
     
     public function login(Request $request)
     {
+
+
+
         $credentials = $request->only('email', 'password');
     
         try {
@@ -85,12 +125,33 @@ class AuthController extends Controller
         );
     }
 
+    
+    /**
+     * @OA\Get(
+     *     path="/api/me",
+     *     summary="Get Current User",
+     *     tags={"Authentication"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response="200", description="User details")
+     * )
+     */
 
     public function me()
     {
+        
+        
         return response()->json(Auth::user());
     }
-
+    
+    /**
+    * @OA\Post(
+    *     path="/api/logout",
+    *     summary="User Logout",
+    *     tags={"Authentication"},
+    *     security={{"bearerAuth":{}}},
+    *     @OA\Response(response="200", description="Logged out successfully")
+    * )
+    */
     public function logout()
     {
         try {

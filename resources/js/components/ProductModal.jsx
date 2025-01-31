@@ -1,18 +1,40 @@
-import React, { useState } from 'react';
-import { X, Upload } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Upload, Pencil } from 'lucide-react';
 import { AxiosRouter } from '../services/utils/Axios.utis';
 
-const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
+const ProductModal = ({ isOpen, onClose, product, onSuccess, mode, onModeChange }) => {
   const [formData, setFormData] = useState({
-    name: product?.name || '',
-    description: product?.description || '',
-    price: product?.price || '',
-    stock: product?.stock || '',
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
     image: null
   });
-  const [preview, setPreview] = useState(product?.image || null);
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (product) {
+      setFormData({
+        name: product.name || '',
+        description: product.description || '',
+        price: product.price || '',
+        stock: product.stock || '',
+        image: null
+      });
+      setPreview(product.image || null);
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        price: '',
+        stock: '',
+        image: null
+      });
+      setPreview(null);
+    }
+  }, [product]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -41,13 +63,11 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
     try {
       const formPayload = new FormData();
       
-      // Añadimos los campos básicos
       formPayload.append('name', formData.name);
       formPayload.append('description', formData.description);
       formPayload.append('price', formData.price);
       formPayload.append('stock', formData.stock);
       
-      // Solo añadimos la imagen si hay una nueva
       if (formData.image instanceof File) {
         formPayload.append('image', formData.image);
       }
@@ -101,14 +121,26 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
         {/* Header */}
         <div className="flex justify-between items-center p-4 border-b border-base-300">
           <h2 className="text-xl font-semibold text-base-content">
-            {product ? 'Editar Producto' : 'Agregar Nuevo Producto'}
+            {mode === 'view' ? 'Detalles del Producto' : 
+             mode === 'edit' ? 'Editar Producto' : 
+             'Agregar Nuevo Producto'}
           </h2>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost btn-sm"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex gap-2">
+            {mode === 'view' && product && (
+              <button
+                onClick={() => onModeChange('edit')}
+                className="btn btn-ghost btn-sm"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="btn btn-ghost btn-sm"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -131,6 +163,7 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                 onChange={handleInputChange}
                 className="input input-bordered w-full"
                 required
+                readOnly={mode === 'view'}
               />
             </div>
 
@@ -144,6 +177,7 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                 onChange={handleInputChange}
                 className="textarea textarea-bordered w-full"
                 required
+                readOnly={mode === 'view'}
               />
             </div>
 
@@ -160,6 +194,7 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                   className="input input-bordered w-full"
                   step="0.01"
                   required
+                  readOnly={mode === 'view'}
                 />
               </div>
 
@@ -174,6 +209,7 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                   onChange={handleInputChange}
                   className="input input-bordered w-full"
                   required
+                  readOnly={mode === 'view'}
                 />
               </div>
             </div>
@@ -192,22 +228,24 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                     />
                   </div>
                 )}
-                <label className="btn btn-outline">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Subir Imagen
-                  <input
-                    type="file"
-                    name="image"
-                    onChange={handleImageChange}
-                    accept="image/png,image/jpeg,image/jpg"
-                    className="hidden"
-                  />
-                </label>
+                {mode !== 'view' && (
+                  <label className="btn btn-outline">
+                    <Upload className="w-4 h-4 mr-2" />
+                    Subir Imagen
+                    <input
+                      type="file"
+                      name="image"
+                      onChange={handleImageChange}
+                      accept="image/png,image/jpeg,image/jpg"
+                      className="hidden"
+                    />
+                  </label>
+                )}
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              {product && (
+              {mode === 'edit' && product && (
                 <button
                   type="button"
                   className="btn btn-error"
@@ -223,15 +261,17 @@ const ProductModal = ({ isOpen, onClose, product, onSuccess }) => {
                 onClick={onClose}
                 disabled={loading}
               >
-                Cancelar
+                {mode === 'view' ? 'Cerrar' : 'Cancelar'}
               </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                {loading ? 'Procesando...' : (product ? 'Actualizar' : 'Crear')}
-              </button>
+              {mode !== 'view' && (
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={loading}
+                >
+                  {loading ? 'Procesando...' : (product ? 'Actualizar' : 'Crear')}
+                </button>
+              )}
             </div>
           </form>
         </div>
